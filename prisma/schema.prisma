@@ -1,0 +1,122 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String        @id @default(cuid())
+  email          String        @unique
+  password       String
+  emailVerified  DateTime?
+  tokens         Int           @default(10)
+  profile        Profile?
+  sentSwipes     Swipe[]       @relation("Swiper")
+  receivedSwipes Swipe[]       @relation("Swiped")
+  sentMessages   Message[]     @relation("MessageSender")
+  matchesAsA     Match[]       @relation("MatchUserA")
+  matchesAsB     Match[]       @relation("MatchUserB")
+  photoReveals   PhotoReveal[] @relation("Revealer")
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@map("users")
+}
+
+model Profile {
+  id         String         @id @default(cuid())
+  userId     String         @unique
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name       String
+  age        Int
+  gender     String
+  bio        String
+  location   String?
+  photos     Photo[]
+  prompts    PromptAnswer[]
+  interests  String         @default("[]")
+  lookingFor String
+  minAge     Int            @default(18)
+  maxAge     Int            @default(50)
+  isActive   Boolean        @default(true)
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+
+  @@map("profiles")
+}
+
+model Photo {
+  id        String   @id @default(cuid())
+  profileId String
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  url       String
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@map("photos")
+}
+
+model PromptAnswer {
+  id        String   @id @default(cuid())
+  profileId String
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  prompt    String
+  answer    String
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@map("prompt_answers")
+}
+
+model Swipe {
+  id        String   @id @default(cuid())
+  swiperId  String
+  swiper    User     @relation("Swiper", fields: [swiperId], references: [id], onDelete: Cascade)
+  swipedId  String
+  swiped    User     @relation("Swiped", fields: [swipedId], references: [id], onDelete: Cascade)
+  liked     Boolean
+  createdAt DateTime @default(now())
+
+  @@unique([swiperId, swipedId])
+  @@map("swipes")
+}
+
+model Match {
+  id        String    @id @default(cuid())
+  userAId   String
+  userA     User      @relation("MatchUserA", fields: [userAId], references: [id], onDelete: Cascade)
+  userBId   String
+  userB     User      @relation("MatchUserB", fields: [userBId], references: [id], onDelete: Cascade)
+  messages  Message[]
+  createdAt DateTime  @default(now())
+
+  @@unique([userAId, userBId])
+  @@map("matches")
+}
+
+model PhotoReveal {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation("Revealer", fields: [userId], references: [id], onDelete: Cascade)
+  revealedUserId String
+  createdAt      DateTime @default(now())
+
+  @@unique([userId, revealedUserId])
+  @@map("photo_reveals")
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  matchId   String
+  match     Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  senderId  String
+  sender    User     @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  content   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@map("messages")
+}
