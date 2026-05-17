@@ -125,7 +125,6 @@ export default function DiscoverClient({ userId }: DiscoverClientProps) {
                   tokens={tokens}
                   isRevealed={revealedUserIds.has(currentProfile.userId)}
                   onReveal={handleReveal}
-                  onTokensChange={setTokens}
                   onSwipe={handleSwipe}
                 />
               )}
