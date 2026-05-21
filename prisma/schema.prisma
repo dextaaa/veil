@@ -109,6 +109,13 @@ model PhotoReveal {
   @@map("photo_reveals")
 }
 
+model StripeEvent {
+  id        String   @id  // Stripe event ID — ensures each event is processed once
+  createdAt DateTime @default(now())
+
+  @@map("stripe_events")
+}
+
 model Message {
   id        String   @id @default(cuid())
   matchId   String

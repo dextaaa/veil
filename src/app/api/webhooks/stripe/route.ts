@@ -3,7 +3,6 @@ import { headers } from "next/headers";
 import { stripe } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
 
-// Must use raw body — do not JSON.parse before passing to constructEvent
 export async function POST(req: Request) {
   const body = await req.text();
   const sig = headers().get("stripe-signature");
@@ -39,12 +38,24 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing metadata" }, { status: 400 });
     }
 
-    await prisma.user.update({
-      where: { id: userId },
-      data: { tokens: { increment: tokens } },
-    });
-
-    console.log(`[STRIPE WEBHOOK] +${tokens} tokens credited to user ${userId}`);
+    try {
+      await prisma.$transaction([
+        // createMany-style insert — throws on duplicate event ID (unique constraint)
+        prisma.stripeEvent.create({ data: { id: event.id } }),
+        prisma.user.update({
+          where: { id: userId },
+          data: { tokens: { increment: tokens } },
+        }),
+      ]);
+      console.log(`[STRIPE WEBHOOK] +${tokens} tokens credited to user ${userId}`);
+    } catch (err: any) {
+      if (err.code === "P2002") {
+        // Duplicate event — already processed, safe to ignore
+        console.log(`[STRIPE WEBHOOK] duplicate event ${event.id} — skipping`);
+      } else {
+        throw err;
+      }
+    }
   }
 
   return NextResponse.json({ received: true });
