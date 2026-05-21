@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, ArrowRight, Loader2 } from "lucide-react";
@@ -9,7 +8,6 @@ import { signIn } from "next-auth/react";
 import { toast } from "sonner";
 
 export default function LoginPage() {
-  const router = useRouter();
   const [form, setForm] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -30,9 +28,9 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (data.profile) {
-        router.push("/discover");
+        window.location.href = "/discover";
       } else {
-        router.push("/onboarding");
+        window.location.href = "/onboarding";
       }
     } catch (err: any) {
       toast.error(err.message);
@@ -50,7 +48,7 @@ export default function LoginPage() {
         redirect: false,
       });
       if (result?.error) throw new Error("Demo login failed — run db:seed first");
-      router.push("/discover");
+      window.location.href = "/discover";
     } catch (err: any) {
       toast.error(err.message);
     } finally {
