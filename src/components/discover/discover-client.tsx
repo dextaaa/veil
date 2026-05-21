@@ -69,12 +69,14 @@ export default function DiscoverClient({ userId }: DiscoverClientProps) {
         className="px-5 pt-12 pb-4 flex items-center justify-between flex-shrink-0"
         style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}
       >
-        <h1
-          className="text-2xl font-bold text-gradient"
-          style={{ fontFamily: "var(--font-display)" }}
-        >
-          veil
-        </h1>
+        <Link href="/">
+          <h1
+            className="text-2xl font-bold text-gradient"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            veil
+          </h1>
+        </Link>
         <div className="flex items-center gap-3">
           {/* Token balance */}
           <div
